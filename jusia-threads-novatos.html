@@ -1,0 +1,369 @@
+
+<title>Análise de Threads — Jus IA · Nunca usaram antes</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #F1F4FA;
+    --surface: #FFFFFF;
+    --text: #1B2340;
+    --secondary: #6B7999;
+    --accent: #2B50C8;
+    --positive: #1A9C5B;
+    --warn: #B45309;
+    --border: #DDE3EF;
+    --bar-bg: #E8EDF8;
+    --highlight: #EEF2FF;
+  }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    padding: 40px 32px 80px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .report-header { margin-bottom: 36px; }
+  .eyebrow {
+    font-size: 11px; font-weight: 600; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 6px;
+  }
+  h1 { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 4px; line-height: 1.3; }
+  .subtitle { font-size: 13px; color: var(--secondary); }
+
+  .stats-row {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 16px; margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 18px 20px;
+  }
+  .stat-card.highlight { border-color: var(--accent); background: var(--highlight); }
+  .stat-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--secondary); margin-bottom: 6px; }
+  .stat-value { font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text); line-height: 1; }
+  .stat-card.highlight .stat-value { color: var(--accent); }
+  .stat-sub { font-size: 12px; color: var(--secondary); margin-top: 4px; }
+
+  .comparison-tag {
+    display: inline-block; font-size: 11px; font-weight: 700;
+    padding: 2px 7px; border-radius: 20px; margin-top: 5px;
+  }
+  .tag-up { background: #E6F9F0; color: var(--positive); }
+  .tag-same { background: #F0F0F0; color: var(--secondary); }
+
+  section {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 28px; margin-bottom: 24px;
+  }
+  h2 {
+    font-size: 13px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .07em; color: var(--secondary);
+    margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border);
+  }
+
+  .dist-grid { display: flex; flex-direction: column; gap: 8px; }
+  .dist-row { display: grid; grid-template-columns: 32px 1fr 64px 80px; align-items: center; gap: 12px; }
+  .dist-label { font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--text); text-align: right; }
+  .dist-bar-track { background: var(--bar-bg); border-radius: 3px; height: 10px; overflow: hidden; }
+  .dist-bar-fill { background: var(--accent); height: 100%; border-radius: 3px; }
+  .dist-count { font-size: 12px; font-variant-numeric: tabular-nums; color: var(--text); font-weight: 600; }
+  .dist-pct { font-size: 12px; color: var(--secondary); font-variant-numeric: tabular-nums; }
+
+  .findings { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .finding { background: var(--bg); border-radius: 8px; padding: 16px 18px; }
+  .finding.callout { background: var(--highlight); border: 1px solid #C7D2F8; }
+  .finding-title { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .finding-body { font-size: 13px; color: var(--secondary); line-height: 1.55; }
+  .finding-body strong { color: var(--text); }
+
+  .badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 20px; margin-top: 8px; }
+  .badge-confirm { background: #E6F9F0; color: var(--positive); }
+  .badge-key { background: #EEF2FF; color: var(--accent); }
+
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+  th {
+    text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .06em; color: var(--secondary); padding: 8px 12px;
+    border-bottom: 2px solid var(--border); white-space: nowrap;
+    cursor: pointer; user-select: none;
+  }
+  th:hover { color: var(--text); }
+  th.sorted { color: var(--accent); }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #F6F8FD; }
+
+  .msg-cell { display: flex; align-items: center; gap: 10px; }
+  .msg-num { font-weight: 700; min-width: 20px; text-align: right; color: var(--text); }
+  .msg-mini-bar { flex: 1; max-width: 80px; height: 6px; background: var(--bar-bg); border-radius: 3px; overflow: hidden; }
+  .msg-mini-fill { height: 100%; background: var(--accent); border-radius: 3px; }
+  .msg-high .msg-mini-fill { background: #1A5CFF; }
+
+  .copy-yes { color: var(--positive); font-weight: 700; font-size: 15px; }
+  .copy-no { color: var(--border); font-size: 15px; }
+
+  .jusia-link { font-family: 'SF Mono', 'Roboto Mono', Menlo, monospace; font-size: 11px; color: var(--accent); text-decoration: none; white-space: nowrap; }
+  .jusia-link:hover { text-decoration: underline; }
+
+  .doc-link { font-size: 12px; color: var(--secondary); text-decoration: none; white-space: nowrap; max-width: 260px; display: block; overflow: hidden; text-overflow: ellipsis; }
+  .doc-link:hover { color: var(--text); text-decoration: underline; }
+
+  .date-cell { color: var(--secondary); font-size: 12px; white-space: nowrap; }
+  .rank-num { font-size: 11px; color: var(--secondary); min-width: 20px; }
+  .sort-arrow { font-size: 10px; opacity: .5; margin-left: 3px; }
+  th.sorted .sort-arrow { opacity: 1; }
+</style>
+
+<div class="report-header">
+  <div class="eyebrow">Experimento juris-attachments-jusia-actions · Treatment · Segmento: nunca usaram Jus IA</div>
+  <h1>Threads abertas via CTA "Se aprofundar com Jus IA" — primeiro contato com a ferramenta</h1>
+  <div class="subtitle">Usuários sem nenhuma thread anterior no Jus IA que clicaram no CTA do inteiro teor e abriram uma conversa</div>
+</div>
+
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="stat-label">Threads analisadas</div>
+    <div class="stat-value">10</div>
+    <div class="stat-sub">Primeiro uso do Jus IA</div>
+  </div>
+  <div class="stat-card highlight">
+    <div class="stat-label">Média de mensagens</div>
+    <div class="stat-value">8,0</div>
+    <div class="stat-sub">vs 5,1 no geral</div>
+    <span class="comparison-tag tag-up">↑ +57%</span>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Período</div>
+    <div class="stat-value" style="font-size:18px; padding-top:4px">29–30 jun</div>
+    <div class="stat-sub">2026</div>
+  </div>
+  <div class="stat-card highlight">
+    <div class="stat-label">Copiaram uma resposta</div>
+    <div class="stat-value">2</div>
+    <div class="stat-sub">20% das threads</div>
+  </div>
+</div>
+
+<section>
+  <h2>Distribuição de mensagens por thread</h2>
+  <div class="dist-grid">
+    <div class="dist-row">
+      <div class="dist-label">4</div>
+      <div class="dist-bar-track"><div class="dist-bar-fill" style="width:0%"></div></div>
+      <div class="dist-count" style="color:var(--secondary)">0 threads</div>
+      <div class="dist-pct">0% <span style="color:var(--secondary);font-size:11px">(era 65%)</span></div>
+    </div>
+    <div class="dist-row">
+      <div class="dist-label">6</div>
+      <div class="dist-bar-track"><div class="dist-bar-fill" style="width:100%"></div></div>
+      <div class="dist-count">4 threads</div>
+      <div class="dist-pct">40%</div>
+    </div>
+    <div class="dist-row">
+      <div class="dist-label">8</div>
+      <div class="dist-bar-track"><div class="dist-bar-fill" style="width:100%"></div></div>
+      <div class="dist-count">4 threads</div>
+      <div class="dist-pct">40%</div>
+    </div>
+    <div class="dist-row">
+      <div class="dist-label">10</div>
+      <div class="dist-bar-track"><div class="dist-bar-fill" style="width:25%"></div></div>
+      <div class="dist-count">1 thread</div>
+      <div class="dist-pct">10%</div>
+    </div>
+    <div class="dist-row">
+      <div class="dist-label">14</div>
+      <div class="dist-bar-track"><div class="dist-bar-fill" style="width:25%"></div></div>
+      <div class="dist-count">1 thread</div>
+      <div class="dist-pct">10%</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Análise de conteúdo — o que os usuários realmente perguntaram</h2>
+
+  <p style="font-size:13px;color:var(--secondary);margin-bottom:20px;line-height:1.6">
+    Mensagens automáticas filtradas (<code style="font-size:11px;background:#F0F2FA;padding:1px 5px;border-radius:4px">selected_documents</code>, <code style="font-size:11px;background:#F0F2FA;padding:1px 5px;border-radius:4px">implicit_extra_context</code>).
+    Analisadas apenas as perguntas reais feitas pelos usuários.
+  </p>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:28px">
+    <div style="background:var(--bg);border-radius:8px;padding:16px 18px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--secondary);margin-bottom:10px">Aplicação ao caso próprio</div>
+      <div style="font-size:24px;font-weight:700;color:var(--text);margin-bottom:4px">2/10</div>
+      <div style="font-size:12px;color:var(--secondary);line-height:1.5">Usuários que usaram o Jus IA para analisar implicações de uma decisão ao <em>seu próprio caso</em>. Inclui a thread mais longa (14 msgs, STF — Tema 454 aplicado a policiais militares).</div>
+    </div>
+    <div style="background:var(--bg);border-radius:8px;padding:16px 18px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--secondary);margin-bottom:10px">Referência e citação</div>
+      <div style="font-size:24px;font-weight:700;color:var(--text);margin-bottom:4px">2/10</div>
+      <div style="font-size:12px;color:var(--secondary);line-height:1.5">Pediram número de tese para artigo acadêmico, ementa e citação formal. Uso voltado à produção de peças ou pesquisa escrita.</div>
+    </div>
+    <div style="background:var(--bg);border-radius:8px;padding:16px 18px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--secondary);margin-bottom:10px">Exploração de documento</div>
+      <div style="font-size:24px;font-weight:700;color:var(--text);margin-bottom:4px">3/10</div>
+      <div style="font-size:12px;color:var(--secondary);line-height:1.5">Solicitaram partes específicas do processo: voto de ministro, tipo de ação (execução ou inventário), papel de uma parte. Jus IA como leitor rápido do inteiro teor.</div>
+    </div>
+    <div style="background:var(--bg);border-radius:8px;padding:16px 18px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--secondary);margin-bottom:10px">Cálculo financeiro</div>
+      <div style="font-size:24px;font-weight:700;color:var(--text);margin-bottom:4px">1/10</div>
+      <div style="font-size:12px;color:var(--secondary);line-height:1.5">Pediu atualização de valor da causa com juros (até 30/06/2026) e enviou imagem para complementar. Caso TJ-RJ com 10 msgs.</div>
+    </div>
+    <div style="background:var(--bg);border-radius:8px;padding:16px 18px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--secondary);margin-bottom:10px">Status e última atualização</div>
+      <div style="font-size:24px;font-weight:700;color:var(--text);margin-bottom:4px">1/10</div>
+      <div style="font-size:12px;color:var(--secondary);line-height:1.5">"Qual foi a última atualização deste processo" — usuário tratou o Jus IA como consulta de andamento processual.</div>
+    </div>
+    <div style="background:var(--bg);border-radius:8px;padding:16px 18px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--secondary);margin-bottom:10px">Desfecho do caso</div>
+      <div style="font-size:24px;font-weight:700;color:var(--text);margin-bottom:4px">1/10</div>
+      <div style="font-size:12px;color:var(--secondary);line-height:1.5">"Natercio é inocente? É procedente ou não?" — queria saber o resultado prático da ação, não fundamentos jurídicos.</div>
+    </div>
+  </div>
+
+  <div style="background:var(--highlight);border:1px solid #C7D2F8;border-radius:8px;padding:18px 20px;margin-bottom:20px">
+    <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px">Thread destaque — maior engajamento (14 msgs, STF)</div>
+    <div style="font-size:13px;color:var(--secondary);line-height:1.6">
+      Usuário aplicou o <strong>Tema 454 do STF</strong> a um caso concreto de policiais militares (Luiz e Breno) que ingressaram por liminar em novembro de 2023. Discutiu com o Jus IA por 14 mensagens os efeitos sobre antiguidade de ingresso vs. antiguidade de promoção, incluindo a distinção entre vantagens fictícias e reais. Claramente um profissional do direito em consulta ativa — o Jus IA funcionou como um consultor jurídico interativo.
+      <div style="margin-top:8px"><span class="badge badge-key">Caso mais complexo do segmento</span></div>
+    </div>
+  </div>
+
+  <div style="background:var(--bg);border-radius:8px;padding:16px 20px">
+    <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:10px">Padrão identificado nos primeiros contatos</div>
+    <div style="font-size:13px;color:var(--secondary);line-height:1.65">
+      Todos os 10 usuários começaram com o prompt automático do CTA ("Resuma o que foi decidido, explique a fundamentação e destaque a tese firmada..."). Os follow-ups revelam que <strong>o Jus IA foi usado como uma extensão da leitura do inteiro teor</strong> — os usuários não "saíram" do documento, foram mais fundo nele. Os casos de uso emergentes mais frequentes: <em>aplicação a situação própria</em>, <em>extração de referência formal</em>, e <em>localização de trecho específico</em>.
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Dados de comportamento</h2>
+  <div class="findings">
+
+    <div class="finding callout">
+      <div class="finding-title">O achado principal</div>
+      <div class="finding-body">
+        <strong>Nenhum usuário parou em 4 mensagens.</strong> No geral do experimento, 65% encerrava na troca automática. Neste segmento, todos foram além — fizeram ao menos 1 pergunta real. Isso sugere que o CTA converte bem para <strong>exploração ativa</strong> entre quem chega sem experiência anterior.
+        <div><span class="badge badge-key">Zero abandono pós-automático</span></div>
+      </div>
+    </div>
+
+    <div class="finding">
+      <div class="finding-title">O que fizeram após a resposta inicial</div>
+      <div class="finding-body">
+        80% fez entre 1 e 2 perguntas de follow-up (<strong>6–8 msgs</strong>), tipicamente aprofundando o tema do julgado — fundamentos da decisão, aplicação a outros casos, tese jurídica central. 20% explorou mais intensamente (10–14 msgs).
+      </div>
+    </div>
+
+    <div class="finding">
+      <div class="finding-title">Comparação com o geral do experimento</div>
+      <div class="finding-body">
+        Geral (100 threads): média 5,1 msgs, 65% só com troca automática, 14% copiou.<br><br>
+        Nunca usaram (10 threads): média 8,0 msgs, <strong>0% só com troca automática</strong>, 20% copiou. O segmento de primeira vez tem engajamento significativamente maior.
+      </div>
+    </div>
+
+    <div class="finding">
+      <div class="finding-title">Ficaram no assunto do julgado?</div>
+      <div class="finding-body">
+        <strong>Sim. 10/10 threads permaneceram dentro do contexto do documento que originou a conversa.</strong> O sistema injeta o inteiro teor automaticamente e todos os follow-ups giraram em torno dele — nenhum usuário mudou de assunto.
+        <div><span class="badge badge-confirm">✓ Zero desvio de contexto</span></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section>
+  <h2>Tabela completa — 10 threads</h2>
+  <div class="table-wrap">
+    <table id="main-table">
+      <thead>
+        <tr>
+          <th data-col="rank">#<span class="sort-arrow">↕</span></th>
+          <th data-col="msgs" class="sorted">Msgs<span class="sort-arrow">↓</span></th>
+          <th data-col="copy">Cópia<span class="sort-arrow">↕</span></th>
+          <th data-col="dt">Clique CTA<span class="sort-arrow">↕</span></th>
+          <th>Documento (origem)</th>
+          <th>Link Jus IA</th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+</section>
+
+<script>
+const data = [
+  {tid:"166bc3c5-5255-431f-b67f-fa8754469da9", msgs:6, copy:false, dt:"2026-06-30 23:41", doc:"tj-mg/4244780418 — Inteiro Teor"},
+  {tid:"8a70d79d-b5c1-4a9f-bb9e-c7f8dd48107c", msgs:8, copy:false, dt:"2026-06-30 17:40", doc:"tj-pr/3691358281 — Inteiro Teor"},
+  {tid:"b2b60ba5-b221-4d0e-a333-e0e478356e94", msgs:8, copy:false, dt:"2026-06-30 17:32", doc:"tj-mg/2588398016"},
+  {tid:"8089e7a3-e08c-4b39-b8f9-1fadbca48372", msgs:8, copy:false, dt:"2026-06-30 12:57", doc:"stj/5726371406 — Inteiro Teor"},
+  {tid:"1873b44f-aae3-476e-b845-4fe96e822f61", msgs:10, copy:false, dt:"2026-06-30 09:45", doc:"tj-rj/1215297623"},
+  {tid:"c9b22564-9074-4b27-9728-fa6464888475", msgs:8, copy:true,  dt:"2026-06-30 09:39", doc:"stj/2935568026 — Inteiro Teor"},
+  {tid:"7f33b20d-43d4-4c11-ae3c-11b44e0813cf", msgs:6, copy:false, dt:"2026-06-30 09:11", doc:"tj-mg/1994693343"},
+  {tid:"ce99d7d1-683e-4d92-b0bb-749c2e587b6e", msgs:6, copy:false, dt:"2026-06-30 07:41", doc:"stj/4444696981 — Inteiro Teor"},
+  {tid:"4283bd24-a521-4fba-912e-1d745c59d23c", msgs:14, copy:true,  dt:"2026-06-29 23:14", doc:"stf/769838383"},
+  {tid:"eb387b18-4971-4221-b295-8a69b7a664cd", msgs:6, copy:false, dt:"2026-06-29 19:03", doc:"trt-9/3019065351"},
+];
+
+const BASE = 'https://ia.jusbrasil.com.br/conversa/c/';
+const MAX = 14;
+let currentSort = { col: 'msgs', dir: 'desc' };
+
+function render(rows) {
+  const tbody = document.getElementById('table-body');
+  tbody.innerHTML = rows.map((r, i) => {
+    const pct = (r.msgs / MAX * 100).toFixed(1);
+    const isHigh = r.msgs >= 10;
+    const href = BASE + r.tid;
+    const shortId = r.tid.substring(0, 8) + '…';
+    return `<tr>
+      <td class="rank-num">${data.indexOf(r) + 1}</td>
+      <td>
+        <div class="msg-cell ${isHigh ? 'msg-high' : ''}">
+          <span class="msg-num">${r.msgs}</span>
+          <div class="msg-mini-bar"><div class="msg-mini-fill" style="width:${pct}%"></div></div>
+        </div>
+      </td>
+      <td style="text-align:center">${r.copy ? '<span class="copy-yes" title="Resposta copiada">✓</span>' : '<span class="copy-no">−</span>'}</td>
+      <td class="date-cell">${r.dt}</td>
+      <td><span style="font-size:12px;color:var(--secondary)">${r.doc}</span></td>
+      <td><a class="jusia-link" href="${href}" target="_blank" rel="noopener">${shortId}</a></td>
+    </tr>`;
+  }).join('');
+}
+
+function sortData(col, dir) {
+  const sorted = [...data].sort((a, b) => {
+    let av, bv;
+    if (col === 'rank') { av = data.indexOf(a); bv = data.indexOf(b); }
+    else if (col === 'msgs') { av = a.msgs; bv = b.msgs; }
+    else if (col === 'copy') { av = a.copy ? 1 : 0; bv = b.copy ? 1 : 0; }
+    else if (col === 'dt') { av = a.dt; bv = b.dt; }
+    if (av < bv) return dir === 'asc' ? -1 : 1;
+    if (av > bv) return dir === 'asc' ? 1 : -1;
+    return 0;
+  });
+  render(sorted);
+}
+
+document.querySelectorAll('th[data-col]').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.col;
+    currentSort.dir = col === currentSort.col ? (currentSort.dir === 'desc' ? 'asc' : 'desc') : 'desc';
+    currentSort.col = col;
+    document.querySelectorAll('th').forEach(t => t.classList.remove('sorted'));
+    th.classList.add('sorted');
+    const arrow = th.querySelector('.sort-arrow');
+    if (arrow) arrow.textContent = currentSort.dir === 'desc' ? '↓' : '↑';
+    sortData(currentSort.col, currentSort.dir);
+  });
+});
+
+render(data);
+</script>
