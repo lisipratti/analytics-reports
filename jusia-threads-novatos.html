@@ -126,12 +126,12 @@
 <div class="stats-row">
   <div class="stat-card">
     <div class="stat-label">Threads analisadas</div>
-    <div class="stat-value">18</div>
+    <div class="stat-value">17</div>
     <div class="stat-sub">Primeiro uso do Jus IA</div>
   </div>
   <div class="stat-card highlight">
     <div class="stat-label">Msgs reais por thread</div>
-    <div class="stat-value">2,3</div>
+    <div class="stat-value">2,1</div>
     <div class="stat-sub">Média — excluindo msg automática do CTA</div>
   </div>
   <div class="stat-card">
@@ -142,7 +142,7 @@
   <div class="stat-card highlight">
     <div class="stat-label">Copiaram uma resposta</div>
     <div class="stat-value">3</div>
-    <div class="stat-sub">17% das threads</div>
+    <div class="stat-sub">18% das threads</div>
   </div>
 </div>
 
@@ -154,13 +154,13 @@
       <div class="dist-label">1</div>
       <div class="dist-bar-track"><div class="dist-bar-fill" style="width:100%"></div></div>
       <div class="dist-count">9 threads</div>
-      <div class="dist-pct">50%</div>
+      <div class="dist-pct">53%</div>
     </div>
     <div class="dist-row">
       <div class="dist-label">2</div>
       <div class="dist-bar-track"><div class="dist-bar-fill" style="width:56%"></div></div>
       <div class="dist-count">5 threads</div>
-      <div class="dist-pct">28%</div>
+      <div class="dist-pct">29%</div>
     </div>
     <div class="dist-row">
       <div class="dist-label">3</div>
@@ -170,12 +170,6 @@
     </div>
     <div class="dist-row">
       <div class="dist-label">5</div>
-      <div class="dist-bar-track"><div class="dist-bar-fill" style="width:11%"></div></div>
-      <div class="dist-count">1 thread</div>
-      <div class="dist-pct">6%</div>
-    </div>
-    <div class="dist-row">
-      <div class="dist-label">6</div>
       <div class="dist-bar-track"><div class="dist-bar-fill" style="width:11%"></div></div>
       <div class="dist-count">1 thread</div>
       <div class="dist-pct">6%</div>
@@ -194,7 +188,7 @@
 
   <p style="font-size:13px;color:var(--secondary);margin-bottom:20px;line-height:1.6">
     Mensagens automáticas filtradas (<code style="font-size:11px;background:#F0F2FA;padding:1px 5px;border-radius:4px">selected_documents</code>, <code style="font-size:11px;background:#F0F2FA;padding:1px 5px;border-radius:4px">implicit_extra_context</code>).
-    Analisadas apenas as perguntas reais feitas pelos usuários.
+    Análise disponível para <strong>10 das 17 threads</strong> (as 8 adicionadas em 2 jul ainda não foram inspecionadas no BQ). Os denominadores abaixo são sobre esse subconjunto.
   </p>
 
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:28px">
@@ -231,9 +225,9 @@
   </div>
 
   <div style="background:var(--highlight);border:1px solid #C7D2F8;border-radius:8px;padding:18px 20px;margin-bottom:20px">
-    <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px">Thread destaque — maior engajamento (14 msgs, STF)</div>
+    <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px">Thread destaque — maior engajamento (5 msgs reais, STF)</div>
     <div style="font-size:13px;color:var(--secondary);line-height:1.6">
-      Usuário aplicou o <strong>Tema 454 do STF</strong> a um caso concreto de policiais militares (Luiz e Breno) que ingressaram por liminar em novembro de 2023. Discutiu com o Jus IA por 14 mensagens os efeitos sobre antiguidade de ingresso vs. antiguidade de promoção, incluindo a distinção entre vantagens fictícias e reais. Claramente um profissional do direito em consulta ativa — o Jus IA funcionou como um consultor jurídico interativo.
+      Usuário aplicou o <strong>Tema 454 do STF</strong> a um caso concreto de policiais militares (Luiz e Breno) que ingressaram por liminar em novembro de 2023. Discutiu com o Jus IA os efeitos sobre antiguidade de ingresso vs. antiguidade de promoção, incluindo a distinção entre vantagens fictícias e reais. Claramente um profissional do direito em consulta ativa — o Jus IA funcionou como um consultor jurídico interativo.
       <div style="margin-top:8px"><span class="badge badge-key">Caso mais complexo do segmento</span></div>
     </div>
   </div>
@@ -241,7 +235,7 @@
   <div style="background:var(--bg);border-radius:8px;padding:16px 20px">
     <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:10px">Padrão identificado nos primeiros contatos</div>
     <div style="font-size:13px;color:var(--secondary);line-height:1.65">
-      Todos os 10 usuários começaram com o prompt automático do CTA ("Resuma o que foi decidido, explique a fundamentação e destaque a tese firmada..."). Os follow-ups revelam que <strong>o Jus IA foi usado como uma extensão da leitura do inteiro teor</strong> — os usuários não "saíram" do documento, foram mais fundo nele. Os casos de uso emergentes mais frequentes: <em>aplicação a situação própria</em>, <em>extração de referência formal</em>, e <em>localização de trecho específico</em>.
+      Todos os usuários analisados começaram com o prompt automático do CTA ("Resuma o que foi decidido, explique a fundamentação e destaque a tese firmada..."). Os follow-ups revelam que <strong>o Jus IA foi usado como uma extensão da leitura do inteiro teor</strong> — os usuários não "saíram" do documento, foram mais fundo nele. Os casos de uso emergentes mais frequentes: <em>aplicação a situação própria</em>, <em>extração de referência formal</em>, e <em>localização de trecho específico</em>.
     </div>
   </div>
 </section>
@@ -253,7 +247,7 @@
     <div class="finding callout">
       <div class="finding-title">O achado principal</div>
       <div class="finding-body">
-        <strong>18/18 usuários enviaram ao menos 1 mensagem real</strong> além do prompt automático do CTA. No geral do experimento, 65% das threads encerravam sem nenhuma pergunta do usuário. Neste segmento, o engajamento foi universal.
+        <strong>17/17 usuários enviaram ao menos 1 mensagem real</strong> além do prompt automático do CTA. No geral do experimento, 65% das threads encerravam sem nenhuma pergunta do usuário. Neste segmento, o engajamento foi universal.
         <div><span class="badge badge-key">Zero abandono pós-automático</span></div>
       </div>
     </div>
@@ -261,7 +255,7 @@
     <div class="finding">
       <div class="finding-title">Profundidade do engajamento</div>
       <div class="finding-body">
-        <strong>50%</strong> fez 1 pergunta real (follow-up único ao resumo). <strong>28%</strong> fez 2 perguntas, aprofundando tese ou pedindo trecho específico. Os 22% restantes exploraram mais — 3, 5, 6 ou 8 perguntas reais —, com destaque para a thread de 8 msgs (TJ-SP) e a de 5 msgs (STF, Tema 454).
+        <strong>53%</strong> fez 1 pergunta real (follow-up único ao resumo). <strong>29%</strong> fez 2 perguntas, aprofundando tese ou pedindo trecho específico. Os 18% restantes exploraram mais — 3, 5 ou 8 perguntas reais —, com destaque para a thread de 8 msgs (TJ-SP) e a de 5 msgs (STF, Tema 454).
       </div>
     </div>
 
@@ -269,7 +263,7 @@
       <div class="finding-title">Comparação com o geral do experimento</div>
       <div class="finding-body">
         Geral (100 threads): 65% sem nenhuma pergunta real, 14% copiou.<br><br>
-        Nunca usaram (18 threads): <strong>0% sem pergunta real</strong>, 17% copiou. O segmento de primeira vez converte melhor em engajamento ativo — mesmo com 50% ficando em apenas 1 pergunta.
+        Nunca usaram (17 threads): <strong>0% sem pergunta real</strong>, 18% copiou. O segmento de primeira vez converte melhor em engajamento ativo — mesmo com 53% ficando em apenas 1 pergunta.
       </div>
     </div>
 
@@ -305,7 +299,6 @@
 
 <script>
 const data = [
-  {tid:"d64976d0-1702-4bcc-be05-e28c7b8cdaf6", msgs:6, copy:false, dt:"2026-07-02 12:00", doc:"tj-mg/4962703143"},
   {tid:"16f492b3-ccf8-4289-b0bb-8202395f94b9", msgs:1, copy:false, dt:"2026-07-02 11:17", doc:"tj-sp/893791140"},
   {tid:"ac51f5bd-fe2d-4a3c-bcca-f7d9768d961f", msgs:8, copy:true,  dt:"2026-07-02 10:18", doc:"tj-sp/5707498268 — Inteiro Teor"},
   {tid:"5d6a84b7-e1d2-4b70-a7b1-c42f2f063efd", msgs:2, copy:false, dt:"2026-07-02 05:39", doc:"tj-pe/2623167573 — Inteiro Teor"},
